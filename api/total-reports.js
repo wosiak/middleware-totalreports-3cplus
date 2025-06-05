@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     const impersonateUrl = `https://app.3c.plus/api/v1/companies/${company_id}/impersonate?api_token=${encodeURIComponent(IMPERSONATE_API_TOKEN)}`;
     
     console.log("🔗 impersonateUrl =>", impersonateUrl);
-    
+
     const impersonateResp = await fetch(impersonateUrl, {
       method: 'POST',
       headers: {
@@ -46,6 +46,7 @@ module.exports = async (req, res) => {
 
     const impersonateJson = await impersonateResp.json();
     const tokenImpersonate = impersonateJson?.data?.api_token;
+    console.log("🔓 tokenImpersonate (partial) =>", tokenImpersonate?.slice(0, 6) + '...');
 
     if (!tokenImpersonate) {
       throw new Error("API token de impersonate não retornado.");
