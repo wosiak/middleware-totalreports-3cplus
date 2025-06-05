@@ -26,8 +26,10 @@ module.exports = async (req, res) => {
   console.log("🔐 IMPERSONATE_API_TOKEN (partial) =>", process.env.IMPERSONATE_API_TOKEN?.slice(0, 6) + '...');
 
   try {
-    const impersonateUrl = `https://app.3c.plus/api/v1/companies/${company_id}/impersonate?api_token=${IMPERSONATE_API_TOKEN}`;
-
+    const impersonateUrl = `https://app.3c.plus/api/v1/companies/${company_id}/impersonate?api_token=${encodeURIComponent(IMPERSONATE_API_TOKEN)}`;
+    
+    console.log("🔗 impersonateUrl =>", impersonateUrl);
+    
     const impersonateResp = await fetch(impersonateUrl, {
       method: 'POST',
       headers: {
