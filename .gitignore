@@ -1,0 +1,4 @@
+.vercel
+# Ignorar variáveis sensíveis e dependências locais
+.env
+node_modules
