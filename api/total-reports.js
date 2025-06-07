@@ -48,8 +48,9 @@ module.exports = async (req, res) => {
       try {
         impersonateJson = await impersonateResp.json();
       } catch (e) {
-        const raw = await impersonateResp.text();
-        throw new Error(`❌ Falha ao fazer parse do JSON do impersonate.\nRaw response: ${raw}`);
+          const raw = await impersonateResp.text();
+          console.error("❌ Erro ao dar parse no JSON do impersonate =>", raw);
+          throw new Error(`❌ Falha ao fazer parse do JSON do impersonate.`);
       }
 
       const tokenImpersonate = impersonateJson?.data?.api_token;
