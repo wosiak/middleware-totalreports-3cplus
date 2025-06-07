@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
       pageUrl.searchParams.set("simple_paginate", "true");
       pageUrl.searchParams.set("order_by_desc", "call_date");
       pageUrl.searchParams.set("include", "campaign_rel");
-      pageUrl.searchParams.set("api_token", tokenImpersonate);
+      pageUrl.searchParams.set("api_token", encodeURIComponent(tokenImpersonate));
       pageUrl.searchParams.set("page", String(page));
       pageUrl.searchParams.set("per_page", "100");
 
