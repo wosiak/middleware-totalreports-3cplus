@@ -1,8 +1,11 @@
+// ✅ Substituir por import dynamic (não obrigatório, mas moderno em ambientes serverless)
 const fetch = require('node-fetch'); 
 
+// ✅ Tokens via variáveis de ambiente
 const TOKEN_AUTORIZADO = process.env.API_TOKEN_INTERNO;
 const IMPERSONATE_API_TOKEN = process.env.IMPERSONATE_API_TOKEN;
 
+// ✅ Vercel usa a função export default async (sem express!)
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Método não permitido' });
@@ -16,24 +19,28 @@ module.exports = async (req, res) => {
     api_token
   } = req.query;
 
+  // ✅ Validação de segurança do token interno
   if (api_token !== TOKEN_AUTORIZADO) {
     return res.status(401).json({
       error: "Token inválido ou não autorizado."
     });
   }
 
-  console.log("🔐 TOKEN_AUTORIZADO (partial) =>", process.env.API_TOKEN_INTERNO?.slice(0, 6) + '...');
-  console.log("🔐 IMPERSONATE_API_TOKEN (partial) =>", process.env.IMPERSONATE_API_TOKEN?.slice(0, 6) + '...');
+  // ✅ Logs úteis para debug — serão ocultos na produção pela Vercel
+  console.log("🔐 TOKEN_AUTORIZADO (partial) =>", TOKEN_AUTORIZADO?.slice(0, 6) + '...');
+  console.log("🔐 IMPERSONATE_API_TOKEN (partial) =>", IMPERSONATE_API_TOKEN?.slice(0, 6) + '...');
+  console.log("🔐 Enviando para impersonate com token =>", IMPERSONATE_API_TOKEN?.slice(0, 12) + '...');
 
   try {
+    // ✅ Usando Authorization com Bearer token (recomendado)
     const impersonateUrl = `https://app.3c.plus/api/v1/companies/${company_id}/impersonate`;
-    
+
     console.log("🔗 impersonateUrl =>", impersonateUrl);
 
     const impersonateResp = await fetch(impersonateUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${IMPERSONATE_API_TOKEN}`,
+        'Authorization': `Bearer ${IMPERSONATE_API_TOKEN}`, // ✅ Correto para API moderna
         'User-Agent': '3CPlus Middleware Bot',
         'Accept': '*/*',
         'Connection': 'keep-alive'
@@ -46,23 +53,24 @@ module.exports = async (req, res) => {
       throw new Error(`Erro no impersonate: ${impersonateResp.status}`);
     }
 
+    // ✅ Garantindo segurança no parse do JSON
     let impersonateJson;
-      try {
-        impersonateJson = await impersonateResp.json();
-      } catch (e) {
-          const raw = await impersonateResp.text();
-          console.error("❌ Erro ao dar parse no JSON do impersonate =>", raw);
-          throw new Error(`❌ Falha ao fazer parse do JSON do impersonate.`);
-      }
+    try {
+      impersonateJson = await impersonateResp.json();
+    } catch (e) {
+      const raw = await impersonateResp.text();
+      console.error("❌ Erro ao dar parse no JSON do impersonate =>", raw);
+      throw new Error(`❌ Falha ao fazer parse do JSON do impersonate.`);
+    }
 
-      const tokenImpersonate = impersonateJson?.data?.api_token;
-      console.log("🔓 tokenImpersonate (partial) =>", tokenImpersonate?.slice(0, 6) + '...');
-
+    const tokenImpersonate = impersonateJson?.data?.api_token;
+    console.log("🔓 tokenImpersonate (partial) =>", tokenImpersonate?.slice(0, 6) + '...');
 
     if (!tokenImpersonate) {
       throw new Error("API token de impersonate não retornado.");
     }
 
+    // ✅ Início da paginação segura
     const chamadasTotais = [];
     let page = 1;
     let hasMorePages = true;
@@ -79,9 +87,11 @@ module.exports = async (req, res) => {
       pageUrl.searchParams.set("simple_paginate", "true");
       pageUrl.searchParams.set("order_by_desc", "call_date");
       pageUrl.searchParams.set("include", "campaign_rel");
-      pageUrl.searchParams.set("api_token", encodeURIComponent(tokenImpersonate));
+      pageUrl.searchParams.set("api_token", tokenImpersonate); // ❗ encodeURIComponent desnecessário aqui!
       pageUrl.searchParams.set("page", String(page));
       pageUrl.searchParams.set("per_page", "100");
+
+      console.log(`📞 Requisição page ${page}: ${pageUrl}`);
 
       const resp = await fetch(pageUrl.toString(), {
         headers: {
@@ -118,6 +128,7 @@ module.exports = async (req, res) => {
     });
 
   } catch (err) {
+    console.error("🔥 Erro final:", err.message);
     return res.status(500).json({
       error: "Erro no processamento do relatório",
       detail: err.message
