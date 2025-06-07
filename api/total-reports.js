@@ -41,7 +41,8 @@ module.exports = async (req, res) => {
 
     if (!impersonateResp.ok) {
       const errText = await impersonateResp.text();
-      throw new Error(`Erro no impersonate: ${impersonateResp.status} - ${errText}`);
+      console.error(`🛑 impersonateResp erro: ${impersonateResp.status} - ${errText}`);
+      throw new Error(`Erro no impersonate: ${impersonateResp.status}`);
     }
 
     let impersonateJson;
