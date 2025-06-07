@@ -27,12 +27,11 @@ module.exports = async (req, res) => {
   }
 
   // ✅ Logs úteis para debug — serão ocultos na produção pela Vercel
-  console.log("🔐 TOKEN_AUTORIZADO (partial) =>", TOKEN_AUTORIZADO?.slice(0, 6) + '...');
-  console.log("🔐 IMPERSONATE_API_TOKEN (partial) =>", IMPERSONATE_API_TOKEN?.slice(0, 6) + '...');
-  console.log("🔐 Enviando para impersonate com token =>", IMPERSONATE_API_TOKEN?.slice(0, 12) + '...');
+  console.log("🔐 TOKEN_AUTORIZADO (partial) =>", TOKEN_AUTORIZADO);
+  console.log("🔐 IMPERSONATE_API_TOKEN =>", IMPERSONATE_API_TOKEN);
+  console.log("🔐 Enviando para impersonate com token =>", IMPERSONATE_API_TOKEN);
 
   try {
-    // ✅ Usando Authorization com Bearer token (recomendado)
     const impersonateUrl = `https://app.3c.plus/api/v1/companies/${company_id}/impersonate?api_token=${IMPERSONATE_API_TOKEN}`;
 
     console.log("🔗 impersonateUrl =>", impersonateUrl);
