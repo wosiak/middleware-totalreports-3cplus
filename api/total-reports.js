@@ -44,9 +44,17 @@ module.exports = async (req, res) => {
       throw new Error(`Erro no impersonate: ${impersonateResp.status} - ${errText}`);
     }
 
-    const impersonateJson = await impersonateResp.json();
-    const tokenImpersonate = impersonateJson?.data?.api_token;
-    console.log("🔓 tokenImpersonate (partial) =>", tokenImpersonate?.slice(0, 6) + '...');
+    let impersonateJson;
+      try {
+        impersonateJson = await impersonateResp.json();
+      } catch (e) {
+        const raw = await impersonateResp.text();
+        throw new Error(`❌ Falha ao fazer parse do JSON do impersonate.\nRaw response: ${raw}`);
+      }
+
+      const tokenImpersonate = impersonateJson?.data?.api_token;
+      console.log("🔓 tokenImpersonate (partial) =>", tokenImpersonate?.slice(0, 6) + '...');
+
 
     if (!tokenImpersonate) {
       throw new Error("API token de impersonate não retornado.");
